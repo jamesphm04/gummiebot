@@ -1,0 +1,14 @@
+{
+    "title": "Easter cup for sale",
+    "price": {
+        "amount": 3,
+        "type": "FIXED"
+    },
+    "condition": "used",
+    "description_file": "desc",
+    "category": "TV Accessories",
+    "images": [
+        "image1.jpeg",
+        "image2.jpeg"
+    ]
+}

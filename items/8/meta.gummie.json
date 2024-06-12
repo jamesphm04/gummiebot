@@ -1,0 +1,14 @@
+{
+    "title": "Tools box",
+    "price": {
+        "amount": 25,
+        "type": "FIXED"
+    },
+    "condition": "used",
+    "description_file": "desc",
+    "category": "TV Accessories",
+    "images": [
+        "image1.jpeg",
+        "image2.jpeg"
+    ]
+}

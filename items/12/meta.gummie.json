@@ -1,0 +1,14 @@
+{
+    "title": "Moisturizing Cream for sale",
+    "price": {
+        "amount": 2,
+        "type": "FIXED"
+    },
+    "condition": "used",
+    "description_file": "desc",
+    "category": "TV Accessories",
+    "images": [
+        "image1.jpeg",
+        "image2.jpeg"
+    ]
+}

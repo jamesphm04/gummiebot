@@ -1,0 +1,14 @@
+{
+    "title": "Grid notes",
+    "price": {
+        "amount": 14,
+        "type": "FIXED"
+    },
+    "condition": "used",
+    "description_file": "desc",
+    "category": "TV Accessories",
+    "images": [
+        "image1.jpeg",
+        "image2.jpeg"
+    ]
+}

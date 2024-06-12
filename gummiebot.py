@@ -160,6 +160,19 @@ class GummieBot:
         DESIRED_IMAGE_URL_KEY = 'teaserUrl'
         DRAFT_TARGET = 'p-post-draft-ad.html'
         SUBMIT_TARGET = 'p-submit-ad.html'
+        MAP_ADDRESS = {
+            'confidenceLevel': 'INVALID',
+            'houseNumber': '',
+            'latitude': -34.92849,
+            'localityName': 'Adelaide CBD',
+            'locationId': '3006880',
+            'longitude': 138.60074,
+            'mapAddress': 'Adelaide CBD, SA 5000',
+            'postcode': '5000',
+            'showLocationOnMap': 'false',
+            'streetName': ''
+        }
+        
 
         # delete any existing drafts
         self.session.get('delete request for drafts',
@@ -216,6 +229,7 @@ class GummieBot:
                                          data=submission, files={
                                              'images': open(image, 'rb')
                                          })
+            time.sleep(2)
             try:
                 url = response.json()[DESIRED_IMAGE_URL_KEY]
                 image_links.append(url)
@@ -223,7 +237,11 @@ class GummieBot:
                 raise RuntimeError(
                     "Could not extract uploaded image URL for image '{}'"
                     .format(image))
+                
+                
         submission['images'] = image_links
+        
+        submission['mapAddress'] = MAP_ADDRESS
 
         # post a draft in case the actual submission fails
         # to make it easier for human to post
@@ -234,6 +252,10 @@ class GummieBot:
         response = self.session.post('final listing',
                                      self.BASE_URL + SUBMIT_TARGET,
                                      data=submission)
+        
+        if SUCCESS_STRING not in response.text:
+            with open(f'response{ad.title}.txt', 'w') as file:
+                file.write(response.text)
 
         return SUCCESS_STRING in response.text
 
@@ -440,7 +462,7 @@ def log(message, end='\n'):
 
 
 if __name__ == '__main__':
-    if len(sys.argv) < 3:
+    if len(sys.argv) < 2:
         log('usage: gummiebot COMMAND DIRECTORY...')
         log('       Automation script for Gumtree Australia')
         log('       Execute COMMAND on one or more DIRECTORY sequentially')
@@ -488,10 +510,13 @@ if __name__ == '__main__':
         gb = GummieBot(username, password)
 
         owd = os.getcwd()
-
-        for directory in sys.argv[2:]:
-            os.chdir(owd)
-            listing = gummie_json_parse(directory)
+        root_items_dir = './items'
+        item_names = [name for name in os.listdir(root_items_dir) if os.path.isdir(os.path.join(root_items_dir, name))]
+        
+        for item_name in item_names:
+            item_dir = os.path.join(owd, root_items_dir, item_name)
+            os.chdir(item_dir)
+            listing = gummie_json_parse(item_dir)
             result = func(gb, listing)
             log("Result for listing '{}': {}".format(listing.title, result))
 
