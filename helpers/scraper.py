@@ -2,6 +2,7 @@ import os
 import pickle
 import time
 import random
+from dotenv import load_dotenv
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service as ChromeService
@@ -55,36 +56,15 @@ class Scraper:
 		chrome_driver_path = ChromeDriverManager().install()
 		self.driver = webdriver.Chrome(service=ChromeService(chrome_driver_path), options = self.driver_options)
 		self.driver.get(self.url)
-		# self.driver.maximize_window()
+		self.driver.maximize_window()
 
 	# Add login functionality and load cookies if there are any with 'cookies_file_name'
-	def add_login_functionality(self, login_url, is_logged_in_selector, cookies_file_name):
+	def add_login_functionality(self, login_url, is_logged_in_selector):
 		self.login_url = login_url
 		self.is_logged_in_selector = is_logged_in_selector
-		self.cookies_file_name = cookies_file_name + '.pkl'
-		self.cookies_file_path = self.cookies_folder + self.cookies_file_name
-
-		# Check if there is a cookie file saved
-		if self.is_cookie_file():
-			# Load cookies
-			self.load_cookies()
-			
-			# Check if user is logged in after adding the cookies
-			is_logged_in = self.is_logged_in(5)
-			if is_logged_in:
-				return
 		
-		# Wait for the user to log in with maximum amount of time 5 minutes
-		print('Please login manually in the browser and after that you will be automatically loged in with cookies. Note that if you do not log in for five minutes, the program will turn off.')
-		is_logged_in = self.is_logged_in(300)
-
-		# User is not logged in so exit from the program
-		if not is_logged_in:
-			exit()
-
-		# User is logged in so save the cookies
-		self.save_cookies()
-		print('Cookies are saved successfully!')
+		self.login()
+		
 
 	# Check if cookie file exists
 	def is_cookie_file(self):
@@ -126,12 +106,21 @@ class Scraper:
 		cookies_file.close()
 
 	# Check if user is logged in based on a html element that is visible only for logged in users
-	def is_logged_in(self, wait_element_time = None):
-		if wait_element_time is None:
-			wait_element_time = self.wait_element_time
+	def login(self):
+		self.go_to_page(self.login_url)
+  
+		load_dotenv()
+		username = os.getenv('USERNAME')
+		password = os.getenv('PASSWORD')
+  
+		self.element_send_keys('input[name="loginMail"]', username)
+		self.element_send_keys('input[name="password"]', password)
 
-		return self.find_element(self.is_logged_in_selector, False, wait_element_time)
-
+		self.element_click_by_xpath('//span[text()="Sign In"]')
+  
+		self.find_element('span[class="header__my-gumtree-trigger-text"]', wait_element_time = 5)
+  
+  
 	# Wait random amount of seconds before taking some action so the server won't be able to tell if you are a bot
 	def wait_random_time(self):
 		random_sleep_seconds = round(random.uniform(0.20, 1.20), 2)

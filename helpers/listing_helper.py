@@ -8,7 +8,7 @@ def update_listings(listings, type, scraper):
 	for listing in listings:
 		# Remove listing if it is already published
 		# remove_listing(listing, type, scraper)
-
+		scraper.go_to_page("https://www.gumtree.com.au/web/syi")
 		# Publish the listing in marketplace
 		publish_listing(listing, type, scraper)
 
@@ -40,59 +40,90 @@ def remove_listing(data, listing_type, scraper) :
 
 def publish_listing(data, listing_type, scraper):
 	# Click on create new listing button
-	scraper.element_click('div[aria-label="Marketplace sidebar"] a[aria-label="Create new listing"]')
-	# Choose listing type
-	scraper.element_click('a[href="/marketplace/create/' + listing_type + '/"]')
+	scraper.element_click('a[href="/web/syi/title"]')
+ 
+	scraper.element_send_keys('input[name="preSyiTitle"]', data['Title'])
+	scraper.element_click_by_xpath('//button[text()="Next"]')
 
-	# Create string that contains all of the image paths separeted by \n
-	images_path = generate_multiple_images_path(data['Photos Folder'], data['Photos Names'])
-	# Add images to the the listing
-	scraper.input_file_add_files('input[accept="image/*,image/heif,image/heic"]', images_path)
-
-	# Add specific fields based on the listing_type
-	function_name = 'add_fields_for_' + listing_type
-	# Call function by name dynamically
-	globals()[function_name](data, scraper)
+	scraper.element_click_by_xpath('//span[text()="' + data['Category1'] + '"]')
+	scraper.element_click_by_xpath('//span[text()="' + data['Category2'] + '"]')
+	scraper.element_click_by_xpath('//span[text()="' + data['Category3'] + '"]')
+	scraper.element_click_by_xpath('//button[text()="Next"]')
 	
-	# scraper.element_send_keys('label[aria-label="Price"] input', data['Price'])
-	# scraper.element_send_keys('label[aria-label="Description"] textarea', data['Description'])
-	# scraper.element_click('ul[role="listbox"] li:first-child > div')
+	images_path = generate_multiple_images_path(data['Photos Folder'], data['Photos Names'])
+	scraper.input_file_add_files('input[accept="image/gif,image/jpg,image/jpeg,image/pjpeg,image/png,image/x-png"]', images_path)
+	
+	scraper.scroll_to_element_by_xpath('//h2[text()="Description"]')
+	scraper.element_send_keys('textarea[name="description"]', data['Description'])
+	
+ 
+	scraper.element_click_by_xpath(f'//span[text()="{data["Condition"]}"]')
+ 
+	scraper.scroll_to_element_by_xpath('//h2[text()="Price"]')
+ 
+	scraper.element_send_keys('input[name="price.amount"]', data['Price'])
+	
+	scraper.scroll_to_element('label[for="mapAddress"]')
+	scraper.element_click_by_xpath('//button[text()="Next"]')
 
-	next_button_selector = 'div [aria-label="Next"] > div'
-	next_button = scraper.find_element(next_button_selector, False, 3)
-	if next_button.get_attribute('aria-disabled'):
-		# Go to the next step
-		scraper.element_click(next_button_selector)
-		scraper.element_send_keys('label[aria-label="Location"] input', data['Location'])
-		scraper.element_click_by_xpath('//span[text()="' + data['Exact Location'] + '"]')
+	scraper.element_click('button[value="0"]')
+
+	scraper.scroll_to_element_by_xpath('//h2[text()="Optional extra"]')
+	scraper.element_click_by_xpath('//button[text()="Post"]')
+ 
+	
+	# # Choose listing type
+	# scraper.element_click('a[href="/marketplace/create/' + listing_type + '/"]')
+
+	# # Create string that contains all of the image paths separeted by \n
+	# images_path = generate_multiple_images_path(data['Photos Folder'], data['Photos Names'])
+	# # Add images to the the listing
+	# scraper.input_file_add_files('input[accept="image/*,image/heif,image/heic"]', images_path)
+
+	# # Add specific fields based on the listing_type
+	# function_name = 'add_fields_for_' + listing_type
+	# # Call function by name dynamically
+	# globals()[function_name](data, scraper)
+	
+	# # scraper.element_send_keys('label[aria-label="Price"] input', data['Price'])
+	# # scraper.element_send_keys('label[aria-label="Description"] textarea', data['Description'])
+	# # scraper.element_click('ul[role="listbox"] li:first-child > div')
+
+	# next_button_selector = 'div [aria-label="Next"] > div'
+	# next_button = scraper.find_element(next_button_selector, False, 3)
+	# if next_button.get_attribute('aria-disabled'):
+	# 	# Go to the next step
+	# 	scraper.element_click(next_button_selector)
+	# 	scraper.element_send_keys('label[aria-label="Location"] input', data['Location'])
+	# 	scraper.element_click_by_xpath('//span[text()="' + data['Exact Location'] + '"]')
   
-		# # Add listing to multiple groups
-		# add_listing_to_multiple_groups(data, scraper)
+	# 	# # Add listing to multiple groups
+	# 	# add_listing_to_multiple_groups(data, scraper)
 
-  		# Go to the next step
-		next_button_selector = 'div [aria-label="Next"] > div'
-		next_button = scraper.find_element(next_button_selector, False, 3)
-		scraper.element_click(next_button_selector)
+  	# 	# Go to the next step
+	# 	next_button_selector = 'div [aria-label="Next"] > div'
+	# 	next_button = scraper.find_element(next_button_selector, False, 3)
+	# 	scraper.element_click(next_button_selector)
   
 
-		# Publish the listing
-		scraper.element_click('div[aria-label="Publish"]:not([aria-disabled])')
+	# 	# Publish the listing
+	# 	scraper.element_click('div[aria-label="Publish"]:not([aria-disabled])')
 
-		# Wait until the listing is published and we are on the listings page where there is a search input
-		scraper.find_element('input[placeholder="Search your listings"]', False)
-	else: 
-		save_draft_button = 'div [aria-label="Save Draft"] > div'
-		scraper.element_click(save_draft_button)
-		scraper.go_to_page("https://facebook.com/marketplace/you/selling")
+	# 	# Wait until the listing is published and we are on the listings page where there is a search input
+	# 	scraper.find_element('input[placeholder="Search your listings"]', False)
+	# else: 
+	# 	save_draft_button = 'div [aria-label="Save Draft"] > div'
+	# 	scraper.element_click(save_draft_button)
+	# 	scraper.go_to_page("https://facebook.com/marketplace/you/selling")
 		
-		# leave_page_selector = 'div [aria-label="Leave Page"] > div'
-		# scraper.find_element(leave_page_selector, False, 5)
-		# scraper.element_click(leave_page_selector)
+	# 	# leave_page_selector = 'div [aria-label="Leave Page"] > div'
+	# 	# scraper.find_element(leave_page_selector, False, 5)
+	# 	# scraper.element_click(leave_page_selector)
   
 
 		
-	# if not next_button:
-	# post_listing_to_multiple_groups(data, listing_type, scraper)
+	# # if not next_button:
+	# # post_listing_to_multiple_groups(data, listing_type, scraper)
 
 
 def generate_multiple_images_path(path, images):
