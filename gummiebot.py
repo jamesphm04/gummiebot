@@ -160,19 +160,6 @@ class GummieBot:
         DESIRED_IMAGE_URL_KEY = 'teaserUrl'
         DRAFT_TARGET = 'p-post-draft-ad.html'
         SUBMIT_TARGET = 'p-submit-ad.html'
-        MAP_ADDRESS = {
-            'confidenceLevel': 'INVALID',
-            'houseNumber': '',
-            'latitude': -34.92849,
-            'localityName': 'Adelaide CBD',
-            'locationId': '3006880',
-            'longitude': 138.60074,
-            'mapAddress': 'Adelaide CBD, SA 5000',
-            'postcode': '5000',
-            'showLocationOnMap': 'false',
-            'streetName': ''
-        }
-        
 
         # delete any existing drafts
         self.session.get('delete request for drafts',
@@ -241,8 +228,6 @@ class GummieBot:
                 
         submission['images'] = image_links
         
-        submission['mapAddress'] = MAP_ADDRESS
-
         # post a draft in case the actual submission fails
         # to make it easier for human to post
         self.session.post('draft',
@@ -253,9 +238,8 @@ class GummieBot:
                                      self.BASE_URL + SUBMIT_TARGET,
                                      data=submission)
         
-        if SUCCESS_STRING not in response.text:
-            with open(f'response{ad.title}.txt', 'w') as file:
-                file.write(response.text)
+        with open(f'response{ad.title}.txt', 'w') as file:
+            file.write(response.text)
 
         return SUCCESS_STRING in response.text
 
