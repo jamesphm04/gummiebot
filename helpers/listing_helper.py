@@ -1,5 +1,7 @@
+import time
+
 # Remove and then publish each listing
-def update_listings(listings, type, scraper):
+def update_listings(listings, type, scraper, server):
 	# If listings are empty stop the function
 	if not listings:
 		return
@@ -10,7 +12,7 @@ def update_listings(listings, type, scraper):
 		# remove_listing(listing, type, scraper)
 		scraper.go_to_page("https://www.gumtree.com.au/web/syi")
 		# Publish the listing in marketplace
-		publish_listing(listing, type, scraper)
+		publish_listing(listing, type, scraper, server)
 
 
 def remove_listing(data, listing_type, scraper) :
@@ -38,14 +40,16 @@ def remove_listing(data, listing_type, scraper) :
 	# Wait until the popup is closed
 	scraper.element_wait_to_be_invisible('div[aria-label="Your Listing"]')
 
-def publish_listing(data, listing_type, scraper):
+def publish_listing(data, listing_type, scraper, server):
 	# Click on create new listing button
 	scraper.element_click('a[href="/web/syi/title"]')
  
 	scraper.element_send_keys('input[name="preSyiTitle"]', data['Title'])
 	scraper.element_click_by_xpath('//button[text()="Next"]')
 
-	scraper.element_click_by_xpath('//span[text()="' + data['Category1'] + '"]')
+	# scraper.element_click_by_xpath('//span[text()="' + data['Category1'] + '"]')
+	scraper.element_click('button[id="9299"]')
+	
 	scraper.element_click_by_xpath('//span[text()="' + data['Category2'] + '"]')
 	scraper.element_click_by_xpath('//span[text()="' + data['Category3'] + '"]')
 	scraper.element_click_by_xpath('//button[text()="Next"]')
@@ -70,6 +74,14 @@ def publish_listing(data, listing_type, scraper):
 
 	scraper.scroll_to_element_by_xpath('//h2[text()="Optional extra"]')
 	scraper.element_click_by_xpath('//button[text()="Post"]')
+ 
+	success_mess_elm = scraper.find_element_by_xpath('//span[text()="Occasionally ads may take a few hours to go live."]', False, 3)
+	
+	if success_mess_elm:
+		print(f"Listing ${data['Id']} is published successfully")
+		server.post(data['Id'])
+	else:
+		raise RuntimeError(f"Listing ${data['Id']} is not published successfully")
  
 	
 	# # Choose listing type

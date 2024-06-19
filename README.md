@@ -122,3 +122,6 @@ Delete an ad by its ID. The ad ID can be acquired by first reading `.ads`. Retur
 #### `.post_ad(ad: GumtreeListing) -> bool`
 
 Posts an instance of `GumtreeListing` to Gumtree. Returns boolean indicating success or failure.
+
+
+celery -A tasks worker -Q update_price --concurrency=4 --loglevel INFO
