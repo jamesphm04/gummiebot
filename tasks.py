@@ -322,23 +322,26 @@ def generate_multiple_images_path(path, images):
 flask_app = create_app() 
 celery_app = flask_app.extensions["celery"] 
 
-@celery_app.task(ignore_result=False, name='app.update') #ignore_result: store the result of the task
-def update_price(id, price):
+@celery_app.task(ignore_result=False, name='tasks.update_price', bind=True, default_retry_delay=120) #ignore_result: store the result of the task
+def update_price(self, id, price):
     scraper = Scraper('https://www.gumtree.com.au')
     try:
         scraper.add_login_functionality('https://www.gumtree.com.au/t-login-form.html', 'span.header__my-gumtree-trigger-text')
-        scraper.go_to_page(f'https://www.gumtree.com.au/m-my-ad.html?adId={id}')
-        scraper.scroll_to_element('h1[itemprop="name"]')
-        scraper.element_click_by_xpath('//span[text()="Edit price"]')
+        time.sleep(2)
+        
+        scraper.go_to_page(f'https://www.gumtree.com.au/p-edit-ad.html?adId={id}')
+        time.sleep(2)
+        
+        scraper.scroll_to_element_by_xpath('//h2[text()="Additional information"]')
         scraper.element_delete_text('input[name="price.amount"]')
         scraper.element_send_keys('input[name="price.amount"]', price)
-        scraper.element_click_by_xpath("//button[span[text()='Confirm']]")
-        
-        time.sleep(2)
+        scraper.element_click_by_xpath("//button[text()='Save & close']")
+        time.sleep(5)
     except Exception as e:
-        raise RuntimeError(f"Failed to update price for listing {id}. Error: {e}")
+        raise self.retry()
     finally:
         scraper.__del__()
+        
 
 			
 

@@ -17,8 +17,8 @@ def create_app() -> Flask:
     app = Flask(__name__)
     app.config.from_mapping(
         CELERY=dict(
-            broker_url="redis://localhost:6379",
-            result_backend="redis://localhost:6379",
+            broker_url="redis://localhost:6379/0",
+            result_backend="redis://localhost:6379/0",
             task_ignore_result=True,
             
         ),
@@ -28,7 +28,7 @@ def create_app() -> Flask:
         CELERY_BROKER_URL='redis://localhost:6379/0',
         CELERY_RESULT_BACKEND='redis://localhost:6379/0',
         CELERY_TASK_ROUTES={
-            'app.update': {'queue': 'update_price'},
+            'tasks.update_price': {'queue': 'update_price'},
     })
     app.config.from_prefixed_env()
     celery_init_app(app)
