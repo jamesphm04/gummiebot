@@ -22,7 +22,6 @@ def update():
         # Queue the task with Celery
         queue_name = "update_price"
         queue_length = get_queue_length(queue_name)
-        print(f"Queue Length for '{queue_name}': {queue_length}")
 
         if queue_length >= 5:
             return jsonify({'error': 'Queue is full, try again later'}), 429

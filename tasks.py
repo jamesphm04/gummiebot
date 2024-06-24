@@ -17,7 +17,15 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import InvalidArgumentException
 from selenium.common.exceptions import ElementClickInterceptedException
 
-import csv
+class ChromeDriverSingleton:
+    _instance = None
+    _chrome_driver_path = None
+
+    @classmethod
+    def get_driver_path(cls):
+        if cls._chrome_driver_path is None:
+            cls._chrome_driver_path = ChromeDriverManager().install()
+        return cls._chrome_driver_path
 
 class Scraper:
 	# This time is used when we are waiting for element to get loaded in the html
@@ -31,7 +39,7 @@ class Scraper:
 
 	# Automatically close driver on destruction of the object
 	def __del__(self):
-		self.driver.close()
+		self.driver.quit()
 
 	# Add these options in order to make chrome driver appear as a human instead of detecting it as a bot
 	# Also change the 'cdc_' string in the chromedriver.exe with Notepad++ for example with 'abc_' to prevent detecting it as a bot
@@ -55,8 +63,9 @@ class Scraper:
 
 	# Setup chrome driver with predefined options
 	def setup_driver(self):
-		chrome_driver_path = ChromeDriverManager().install()
-		self.driver = webdriver.Chrome(service=ChromeService(chrome_driver_path), options = self.driver_options)
+		chrome_driver_path = ChromeDriverSingleton.get_driver_path()
+		logger.info(f"Driver_path: {chrome_driver_path}")
+		self.driver = webdriver.Chrome(service=ChromeService(chrome_driver_path), options=self.driver_options)
 		self.driver.get(self.url)
 		self.driver.maximize_window()
 
@@ -74,14 +83,13 @@ class Scraper:
 		load_dotenv()
 		username = os.getenv('USERNAME')
 		password = os.getenv('PASSWORD')
+
+		self.find_element('input[name="loginMail"]', wait_element_time=5)
   
-		self.element_send_keys('input[name="loginMail"]', username)
+		self.element_send_keys('input[name="loginMail"]', username, True)
 		self.element_send_keys('input[name="password"]', password)
 
-		self.element_click_by_xpath('//span[text()="Sign In"]')
-  
-		self.find_element('span[class="header__my-gumtree-trigger-text"]', wait_element_time = 5)
-  
+		self.element_click_by_xpath('//span[text()="Sign In"]') 
   
 	# Wait random amount of seconds before taking some action so the server won't be able to tell if you are a bot
 	def wait_random_time(self):
@@ -316,13 +324,15 @@ def generate_multiple_images_path(path, images):
 
 	return images_path
 
-
-
 ############################################################
 flask_app = create_app() 
 celery_app = flask_app.extensions["celery"] 
 
-@celery_app.task(ignore_result=False, name='tasks.update_price', bind=True, default_retry_delay=120) #ignore_result: store the result of the task
+import logging
+from celery.exceptions import SoftTimeLimitExceeded
+logger = logging.getLogger(__name__)
+
+@shared_task(name='tasks.update_price', bind=True, soft_time_limit=60) 
 def update_price(self, id, price):
     scraper = Scraper('https://www.gumtree.com.au')
     try:
@@ -337,10 +347,12 @@ def update_price(self, id, price):
         scraper.element_send_keys('input[name="price.amount"]', price)
         scraper.element_click_by_xpath("//button[text()='Save & close']")
         time.sleep(5)
-    except Exception as e:
-        raise self.retry()
-    finally:
+    except SoftTimeLimitExceeded:
         scraper.__del__()
+        raise self.retry(max_retries=2)
+    except Exception:
+        scraper.__del__()
+        raise self.retry(max_retries=2)
         
 
 			
