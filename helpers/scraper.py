@@ -278,9 +278,9 @@ class Scraper:
 	def scroll_to_element(self, selector):
 		element = self.find_element(selector)
 
-		self.driver.execute_script('arguments[0].scrollIntoView(true);', element)
+		self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", element)
 
 	def scroll_to_element_by_xpath(self, xpath):
 		element = self.find_element_by_xpath(xpath)
 
-		self.driver.execute_script('arguments[0].scrollIntoView(true);', element)
+		self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", element)

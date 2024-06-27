@@ -28,7 +28,7 @@ def create_app() -> Flask:
         CELERY_BROKER_URL='redis://localhost:6379/0',
         CELERY_RESULT_BACKEND='redis://localhost:6379/0',
         CELERY_TASK_ROUTES={
-            'tasks.update_price': {'queue': 'update_price'},
+            'tasks.update_item': {'queue': 'update_item'},
     })
     app.config.from_prefixed_env()
     celery_init_app(app)
