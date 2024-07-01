@@ -5,6 +5,7 @@ from celery import shared_task
 import os
 import time
 import random
+from urllib.parse import urlparse, parse_qs
 from dotenv import load_dotenv
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium import webdriver
@@ -268,6 +269,29 @@ class Scraper:
 			# Remove the selected text with backspace
 			element.send_keys(Keys.BACK_SPACE)
 
+def generate_multiple_images_path(path, images):
+	# Last character must be '/' because after that we are adding the name of the image
+	if path[-1] != '/':
+		path += '/'
+
+	images_path = ''
+
+	# Split image names into array by this symbol ";"
+	image_names = images.split(';')
+
+	# Create string that contains all of the image paths separeted by \n
+	if image_names:
+		for image_name in image_names:
+			# Remove whitespace before and after the string
+			image_name = image_name.strip()
+
+			# Add "\n" for indicating new file
+			if images_path != '':
+				images_path += '\n'
+
+			images_path += path + image_name
+
+	return images_path
 ############################################################
 flask_app = create_app() 
 celery_app = flask_app.extensions["celery"] 
@@ -276,8 +300,22 @@ scraper = Scraper('https://www.gumtree.com.au')
 scraper.add_login_functionality('https://www.gumtree.com.au/t-login-form.html', 'span.header__my-gumtree-trigger-text')
 
 import logging
+import requests
 
 logger = logging.getLogger(__name__)
+
+def confirm_updating_item(id):
+	response = requests.get(f'http://localhost:5000/main_app/gumtree/confirm_update/{id}')
+	logger.info(f"Confirming updating item {id} is successfully with response: {response}")
+ 
+def confirm_deleting_item(id):
+	response = requests.get(f'http://localhost:5000/main_app/gumtree/confirm_delete/{id}')
+	logger.info(f"Confirming deleting item {id} is successfully with response: {response}")
+ 
+def confirm_creating_item(id):
+	response = requests.get(f'http://localhost:5000/main_app/gumtree/confirm_create/{id}')
+	logger.info(f"Confirming creating item {id} is successfully with response: {response}")
+
 
 @shared_task(name='tasks.update_item', bind=True) 
 def update_item(self, item):
@@ -344,17 +382,81 @@ def update_item(self, item):
 	scraper.scroll_to_element('input[name="mapAddress.mapAddress"]')
 	scraper.element_delete_text('input[name="mapAddress.mapAddress"]')
 	scraper.element_send_keys('input[name="mapAddress.mapAddress"]', item["Location"])
-	logger.info(f'{item["Location"]} updated')
 	time.sleep(1)
 	scraper.find_multiple_elements_by_xpath('//div[@class="pac-item"]', 0).click()
 	time.sleep(2)
 	
 	#save
 	scraper.element_click_by_xpath('//button[text()="Save & close"]')
-	logger.info(f"Listing {item['Id']} is updated successfully")
+	logger.info(f"Item {item['Id']} is updated successfully")
 	time.sleep(2)
-
+	
+	try:
+		confirm_updating_item(item['Id'])
+	except:
+		logger.error(f"Failed to confirm updating of item {item['Id']}")
         
 
-			
+@shared_task(name='tasks.delete_item', bind=True) 
+def delete_item(self, item):
+	scraper.go_to_page(f"https://www.gumtree.com.au/m-my-ad.html?adId={item['Id']}")
+ 
+	if scraper.find_element_by_xpath(f'//a[@href="/m-delete-ad.html?adId={item["Id"]}"]', False, 2):
+		scraper.scroll_to_element_by_xpath(f'//a[@href="/m-delete-ad.html?adId={item["Id"]}"]')
+		scraper.element_click_by_xpath(f'//a[@href="/m-delete-ad.html?adId={item["Id"]}"]')
+		scraper.element_click_by_xpath(f'//label[text()="{item["Reason"]}"]')
+		scraper.element_click_by_xpath('//button[@id="delete-ad-confirm"]')
+  
+		logger.info(f"Item {item['Id']} is deleted successfully")
+		time.sleep(2)
+	
+	try:
+		confirm_deleting_item(item['Id'])
+	except:
+		logger.error(f"Failed to confirm deleting of item {item['Id']}")			
 
+@shared_task(name='tasks.create_item', bind=True) 
+def create_item(self, item):
+	scraper.go_to_page(f'https://www.gumtree.com.au/web/syi/title')
+	
+	scraper.element_send_keys('input[name="preSyiTitle"]', item['Title'])
+	scraper.element_click_by_xpath('//button[text()="Next"]')
+
+	scraper.element_click_by_xpath(f'//span[text()="{item["Category1"]}"]')
+	time.sleep(1)
+	scraper.element_click_by_xpath(f'//span[text()="{item["Category2"]}"]')
+	time.sleep(1)
+	scraper.element_click_by_xpath(f'//span[text()="{item["Category3"]}"]')
+	time.sleep(1)
+
+	scraper.element_click_by_xpath('//button[text()="Next"]')
+	
+	images_path = generate_multiple_images_path(item['Photos Folder'], item['Photos Names'])
+	scraper.input_file_add_files('input[accept="image/gif,image/jpg,image/jpeg,image/pjpeg,image/png,image/x-png"]', images_path)
+	
+	scraper.scroll_to_element_by_xpath('//h2[text()="Description"]')
+	scraper.element_send_keys('textarea[name="description"]', item['Description'])
+	
+ 
+	scraper.element_click_by_xpath(f'//span[text()="{item["Condition"]}"]')
+ 
+	scraper.scroll_to_element_by_xpath('//h2[text()="Price"]')
+ 
+	scraper.element_send_keys('input[name="price.amount"]', item['Price'])
+	
+	scraper.scroll_to_element('label[for="mapAddress"]')
+	scraper.element_click_by_xpath('//button[text()="Next"]')
+	time.sleep(2)
+
+	id = scraper.get_current_url().split("=")[-1]
+	
+	#Free
+	scraper.element_click('button[value="0"]')
+
+	scraper.scroll_to_element_by_xpath('//h2[text()="Optional extra"]')
+	scraper.element_click_by_xpath('//button[text()="Post"]')
+ 
+	try:
+		confirm_creating_item(id)
+	except:
+		logger.error(f"Failed to confirm creating of item {item['Title']}")			
