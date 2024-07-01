@@ -305,15 +305,15 @@ import requests
 logger = logging.getLogger(__name__)
 
 def confirm_updating_item(id):
-	response = requests.get(f'http://localhost:5000/main_app/gumtree/confirm_update/{id}')
+	response = requests.get(f'http://localhost:5000/main_app/gummtree_bot/confirm_update/{id}')
 	logger.info(f"Confirming updating item {id} is successfully with response: {response}")
  
 def confirm_deleting_item(id):
-	response = requests.get(f'http://localhost:5000/main_app/gumtree/confirm_delete/{id}')
+	response = requests.get(f'http://localhost:5000/main_app/gummtree_bot/confirm_delete/{id}')
 	logger.info(f"Confirming deleting item {id} is successfully with response: {response}")
  
 def confirm_creating_item(id):
-	response = requests.get(f'http://localhost:5000/main_app/gumtree/confirm_create/{id}')
+	response = requests.get(f'http://localhost:5000/main_app/gummtree_bot/confirm_create/{id}')
 	logger.info(f"Confirming creating item {id} is successfully with response: {response}")
 
 
