@@ -1,0 +1,415 @@
+{
+  "x-generator": "NSwag v13.0.4.0 (NJsonSchema v10.1.21.0 (Newtonsoft.Json v11.0.0.0))",
+  "swagger": "2.0",
+  "info": {
+    "title": "WCP Workflow Stock Listing API",
+    "version": "1.0.0"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/api/auth/authenticate": {
+      "post": {
+        "tags": [
+          "AuthApi"
+        ],
+        "operationId": "AuthApi_Authenticate",
+        "parameters": [
+          {
+            "name": "request",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/GetApplicationQuery"
+            },
+            "x-nullable": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "x-nullable": true,
+            "description": "",
+            "schema": {
+              "type": "file"
+            }
+          }
+        }
+      }
+    },
+    "/api/stock-listings/campaigns": {
+      "get": {
+        "tags": [
+          "StockListingsApi"
+        ],
+        "summary": "Retrieves a list of campaign records",
+        "operationId": "StockListingsApi_GetCampaigns",
+        "responses": {
+          "200": {
+            "x-nullable": true,
+            "description": "",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/CampaignDto"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/stock-listings/neto-stock-for-campaign": {
+      "post": {
+        "tags": [
+          "StockListingsApi"
+        ],
+        "summary": "Retrieves a list of stock items for a marketing campaign",
+        "operationId": "StockListingsApi_GetNetoStockForCampaign",
+        "parameters": [
+          {
+            "name": "query",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/GetNetoStockListingsForCampaignQuery"
+            },
+            "x-nullable": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "x-nullable": true,
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/PaginatedEnumerableOfNetoStockForMarketingCampaignsQuery"
+            }
+          }
+        }
+      }
+    },
+    "/api/stock-listings/create": {
+      "post": {
+        "tags": [
+          "StockListingsApi"
+        ],
+        "summary": "Creates a new stock listing record",
+        "operationId": "StockListingsApi_Create",
+        "parameters": [
+          {
+            "name": "model",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/StockCampaignDto"
+            },
+            "x-nullable": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "x-nullable": true,
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/StockCampaignDto"
+            }
+          }
+        }
+      }
+    },
+    "/api/stock-listings/update": {
+      "put": {
+        "tags": [
+          "StockListingsApi"
+        ],
+        "summary": "Updates a stock listing record",
+        "operationId": "StockListingsApi_Update",
+        "parameters": [
+          {
+            "name": "model",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/StockCampaignDto"
+            },
+            "x-nullable": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "x-nullable": true,
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/StockCampaignDto"
+            }
+          }
+        }
+      }
+    },
+    "/api/stock-listings/remove": {
+      "delete": {
+        "tags": [
+          "StockListingsApi"
+        ],
+        "summary": "Removes stock from a listing",
+        "operationId": "StockListingsApi_Remove",
+        "parameters": [
+          {
+            "name": "model",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/StockCampaignDto"
+            },
+            "x-nullable": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "x-nullable": true,
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/StockCampaignDto"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "GetApplicationQuery": {
+      "type": "object",
+      "properties": {
+        "ApplicationName": {
+          "type": "string"
+        },
+        "ApplicationSecret": {
+          "type": "string"
+        }
+      }
+    },
+    "CampaignDto": {
+      "type": "object",
+      "required": [
+        "CampaignId"
+      ],
+      "properties": {
+        "CampaignId": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "CampaignName": {
+          "type": "string"
+        }
+      }
+    },
+    "PaginatedEnumerableOfNetoStockForMarketingCampaignsQuery": {
+      "type": "object",
+      "required": [
+        "CurrentPage",
+        "PageSize",
+        "RecordCount"
+      ],
+      "properties": {
+        "CurrentPage": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "PageSize": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "RecordCount": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "Records": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/NetoStockForMarketingCampaignsQuery"
+          }
+        }
+      }
+    },
+    "NetoStockForMarketingCampaignsQuery": {
+      "type": "object",
+      "required": [
+        "StockId",
+        "IsNew",
+        "IsUsed",
+        "IsComplete",
+        "IsRebuilt",
+        "RequiresManualListing"
+      ],
+      "properties": {
+        "StockId": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "CatalogueName": {
+          "type": "string"
+        },
+        "AdType": {
+          "type": "string"
+        },
+        "WebPrice": {
+          "type": "string"
+        },
+        "Negotiable": {
+          "type": "string"
+        },
+        "StockNumber": {
+          "type": "string"
+        },
+        "Condition": {
+          "type": "string"
+        },
+        "IsNew": {
+          "type": "boolean"
+        },
+        "IsUsed": {
+          "type": "boolean"
+        },
+        "IsComplete": {
+          "type": "boolean"
+        },
+        "IsRebuilt": {
+          "type": "boolean"
+        },
+        "RequiresManualListing": {
+          "type": "boolean"
+        },
+        "PartCode": {
+          "type": "string"
+        },
+        "PartFinalStatusCode": {
+          "type": "string"
+        },
+        "WebsiteProductName": {
+          "type": "string"
+        },
+        "SalesTitle": {
+          "type": "string"
+        },
+        "LargeSalesDescription": {
+          "type": "string"
+        },
+        "Suburb": {
+          "type": "string"
+        },
+        "State": {
+          "type": "string"
+        },
+        "PostCode": {
+          "type": "string"
+        },
+        "PaypalId": {
+          "type": "string"
+        },
+        "WhenPublishedToFacebookMarketplace": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "WhenPublishedToGumTree": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "Tag": {
+          "type": "string"
+        },
+        "Image01": {
+          "type": "string"
+        },
+        "Image02": {
+          "type": "string"
+        },
+        "Image03": {
+          "type": "string"
+        },
+        "Image04": {
+          "type": "string"
+        },
+        "Image05": {
+          "type": "string"
+        },
+        "Image06": {
+          "type": "string"
+        },
+        "Image07": {
+          "type": "string"
+        },
+        "Image08": {
+          "type": "string"
+        },
+        "Image09": {
+          "type": "string"
+        }
+      }
+    },
+    "GetNetoStockListingsForCampaignQuery": {
+      "type": "object",
+      "required": [
+        "CampaignId",
+        "IncludeAlreadyListed"
+      ],
+      "properties": {
+        "CampaignId": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "IncludeAlreadyListed": {
+          "type": "boolean"
+        },
+        "PageNo": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "PageSize": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "StockCampaignDto": {
+      "type": "object",
+      "required": [
+        "StockNumber",
+        "CampaignId",
+        "IsAssigned",
+        "IsListed"
+      ],
+      "properties": {
+        "StockNumber": {
+          "type": "string",
+          "description": "Unique stock number",
+          "minLength": 1
+        },
+        "CampaignId": {
+          "type": "integer",
+          "description": "Campaign identifier",
+          "format": "int32"
+        },
+        "StockId": {
+          "type": "integer",
+          "description": "Stock identifier",
+          "format": "int32"
+        },
+        "IsAssigned": {
+          "type": "boolean",
+          "description": "Determines if stock is assigned to a given campaign. To remove stock from a given campaign, set the value to false."
+        },
+        "IsListed": {
+          "type": "boolean",
+          "description": "Determines if stock is listed under a given campaign. To de-list stock from a given campaign, set the value to false."
+        },
+        "WhenListed": {
+          "type": "string",
+          "description": "Determines the exact date/time (in local timezone) when stock was listed under a given campaign.",
+          "format": "date-time"
+        }
+      }
+    }
+  }
+}
