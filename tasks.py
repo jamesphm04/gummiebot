@@ -57,85 +57,85 @@ def update_item(self, item):
  
 	is_other_make = "Yes";	
  
-	if item.get('Make'): # update car make
+	if item.get('make'): # update car make
 		is_other_make = update_make(item, scraper)	
 
-	if item.get('Model') and is_other_make == "No": # update car model
+	if item.get('model') and is_other_make == "No": # update car model
 		update_model(item, scraper)
 	
-	if item.get('Body Type'): # update body type
+	if item.get('body_type'): # update body type
 		update_body_type(item, scraper)
  
-	if item.get('Warranty'): # update warranty
+	if item.get('warranty'): # update warranty
 		update_warranty(item, scraper)
 
-	if item.get('Condition'): # update condition
+	if item.get('condition'): # update condition
 		update_condition(item, scraper)
   
-	if item.get('Price'): # update price
-		logger.info(f"Updating price of item {item['Id']} to {item['Price']}")
+	if item.get('price'): # update price
+		logger.info(f"Updating price of item {item['id']} to {item['price']}")
 		update_price(item, scraper)
   
-	if item.get('Location'): # update location
+	if item.get('location'): # update location
 		update_location(item, scraper)
 	
 	#save
 	scraper.element_click_by_xpath('//button[text()="Save & close"]')
-	logger.info(f"Item {item['Id']} is updated successfully")
+	logger.info(f"Item {item['id']} is updated successfully")
 	time.sleep(2)
 	
 	try:
-		confirm_updating_item(item['Id'])
+		confirm_updating_item(item['id'])
 	except:
-		logger.error(f"Failed to confirm updating of item {item['Id']}")
+		logger.error(f"Failed to confirm updating of item {item['id']}")
         
 
 @shared_task(name='tasks.delete_item', bind=True) 
 def delete_item(self, item):
-	scraper.go_to_page(f"https://www.gumtree.com.au/m-my-ad.html?adId={item['Id']}")
+	scraper.go_to_page(f"https://www.gumtree.com.au/m-my-ad.html?adId={item['id']}")
  
-	if scraper.find_element_by_xpath(f'//a[@href="/m-delete-ad.html?adId={item["Id"]}"]', False, 2):
-		scraper.scroll_to_element_by_xpath(f'//a[@href="/m-delete-ad.html?adId={item["Id"]}"]')
-		scraper.element_click_by_xpath(f'//a[@href="/m-delete-ad.html?adId={item["Id"]}"]')
-		scraper.element_click_by_xpath(f'//label[text()="{item["Reason"]}"]')
+	if scraper.find_element_by_xpath(f'//a[@href="/m-delete-ad.html?adId={item["id"]}"]', False, 2):
+		scraper.scroll_to_element_by_xpath(f'//a[@href="/m-delete-ad.html?adId={item["id"]}"]')
+		scraper.element_click_by_xpath(f'//a[@href="/m-delete-ad.html?adId={item["id"]}"]')
+		scraper.element_click_by_xpath(f'//label[text()="{item["reason"]}"]')
 		scraper.element_click_by_xpath('//button[@id="delete-ad-confirm"]')
   
-		logger.info(f"Item {item['Id']} is deleted successfully")
+		logger.info(f"Item {item['id']} is deleted successfully")
 		time.sleep(2)
 	
 	try:
-		confirm_deleting_item(item['Id'])
+		confirm_deleting_item(item['id'])
 	except:
-		logger.error(f"Failed to confirm deleting of item {item['Id']}")			
+		logger.error(f"Failed to confirm deleting of item {item['id']}")			
 
 @shared_task(name='tasks.create_item', bind=True) 
 def create_item(self, item):
 	scraper.go_to_page(f'https://www.gumtree.com.au/web/syi/title')
 	
-	scraper.element_send_keys('input[name="preSyiTitle"]', item['Title'])
+	scraper.element_send_keys('input[name="preSyiTitle"]', item['title'])
 	scraper.element_click_by_xpath('//button[text()="Next"]')
 
-	scraper.element_click_by_xpath(f'//span[text()="{item["Category1"]}"]')
+	scraper.element_click_by_xpath(f'//span[text()="{item["category_1"]}"]')
 	time.sleep(1)
-	scraper.element_click_by_xpath(f'//span[text()="{item["Category2"]}"]')
+	scraper.element_click_by_xpath(f'//span[text()="{item["category_2"]}"]')
 	time.sleep(1)
-	scraper.element_click_by_xpath(f'//span[text()="{item["Category3"]}"]')
+	scraper.element_click_by_xpath(f'//span[text()="{item["category_3"]}"]')
 	time.sleep(1)
 
 	scraper.element_click_by_xpath('//button[text()="Next"]')
 	
-	images_path = generate_multiple_images_path(item['Photos Folder'], item['Photos Names'])
+	images_path = generate_multiple_images_path(item['photo_dir'], item['photo_names'])
 	scraper.input_file_add_files('input[accept="image/gif,image/jpg,image/jpeg,image/pjpeg,image/png,image/x-png"]', images_path)
 	
 	scraper.scroll_to_element_by_xpath('//h2[text()="Description"]')
-	scraper.element_send_keys('textarea[name="description"]', item['Description'])
+	scraper.element_send_keys('textarea[name="description"]', item['description'])
 	
  
-	scraper.element_click_by_xpath(f'//span[text()="{item["Condition"]}"]')
+	scraper.element_click_by_xpath(f'//span[text()="{item["condition"]}"]')
  
 	scraper.scroll_to_element_by_xpath('//h2[text()="Price"]')
  
-	scraper.element_send_keys('input[name="price.amount"]', item['Price'])
+	scraper.element_send_keys('input[name="price.amount"]', item['price'])
 	
 	scraper.scroll_to_element('label[for="mapAddress"]')
 	scraper.element_click_by_xpath('//button[text()="Next"]')
@@ -152,4 +152,4 @@ def create_item(self, item):
 	try:
 		confirm_creating_item(id)
 	except:
-		logger.error(f"Failed to confirm creating of item {item['Title']}")			
+		logger.error(f"Failed to confirm creating of item {item['title']}")			

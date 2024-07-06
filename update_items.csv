@@ -1,4 +1,4 @@
-"Id","Make","Model","Body Type","Warranty","Condition","Price","Location"
+"id","make","model","body_type","warranty","condition","price","location"
 "1325554499","Audi","fdfdfd","Convertible","Available","Used","1234","Brisbane City QLD 4000, Australia"
 "1325554529","Audi","A6","Convertible","No","Refurbished","1111","Brisbane City QLD 4000, Australia"
 "1325554517","Audi","A6","Convertible","No","Refurbished","1111","Brisbane City QLD 4000, Australia"
